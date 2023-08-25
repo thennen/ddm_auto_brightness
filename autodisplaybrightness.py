@@ -1,10 +1,14 @@
 # this is supposed to set the monitor to a brightness as a function of time
-# just put it in the windows scheduler
+# just put it in the windows scheduler and tell it to run every 15 minutes
 
 import os
 from math import sin, cos, pi
 from datetime import datetime
 from dateutil import tz
+
+import logging
+
+logging.basicConfig(filename="autodisplaybrightness.log", level=logging.INFO)
 
 
 maxbrightness = 80
@@ -24,9 +28,11 @@ except:
     # old way
     nowDec = now.hour + now.minute/60
     maxtime = 12
-    # is a sin function a good idea?
+    # is a sine function a good idea?
     brightness = int(round(minbrightness + (maxbrightness - minbrightness) * (1 + cos((nowDec - maxtime)*2*pi/24))/2))
 
 bypass = False
 if not bypass:
     os.system(fr'"C:\Program Files (x86)\Dell\Dell Display Manager\ddm.exe" /SetBrightnessLevel {brightness}')
+    nowstr = now.strftime('%Y-%m-%d %H:%M:%S')
+    logging.info(f'{nowstr}\t{brightness}')
