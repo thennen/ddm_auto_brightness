@@ -23,19 +23,20 @@ ddm2_fp = r"C:\Program Files\Dell\Dell Display Manager 2\DDM.exe"
 ddm_fp = r"C:\Program Files (x86)\Dell\Dell Display Manager\ddm.exe"
 
 
-def set_brightness(brightness, log=True):
+def set_brightness(brightness):
     brightness = int(round(brightness))
     if os.path.isfile(ddm_fp):
         os.system(fr'"{ddm_fp}" /SetBrightnessLevel {brightness}')
     if os.path.isfile(ddm2_fp):
         os.system(fr'"{ddm2_fp}" /WriteBrightnessLevel {brightness}')
+    return brightness
 
+def log(brightness, note=''):
     nowstr = now.strftime('%Y-%m-%d %H:%M:%S')
     logstring = f'{nowstr}\t{way}\t{brightness}'
-    if log:
-        logging.info(logstring)
+    logstring = '\t'.join((nowstr, format(brightness), note))
+    logging.info(logstring)
     print(logstring)
-    return brightness
 
 def get_brightness():
     '''
@@ -148,7 +149,7 @@ def set_brightness_continuously():
 
             # A bit of hysteresis so we don't send constant updates due to noise if the brightness is near a transition
             if abs(bright_diff) > 0.8:
-                lastbrightness = set_brightness(brightness, log=False)
+                lastbrightness = set_brightness(brightness)
         else:
             time.sleep(3)
 
@@ -169,3 +170,4 @@ if __name__ == '__main__':
         print('Bypass on')
     else:
         set_brightness(brightness)
+        log(brightness, way)
