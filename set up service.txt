@@ -1,0 +1,6 @@
+get svcbatch.exe from https://github.com/mturk/svcbatch/ and put it in the same dir as the bat files
+cd to this directory with cmd running as admin
+
+sc create "autobrightness" binPath= ""%cd%\svcbatch.exe" -n python continuous_autodisplaybrightness.py" start= auto 
+
+go to services.msc and change the account that is supposed to run the service and type in pw

@@ -11,9 +11,10 @@ import logging
 
 logging.basicConfig(filename="autodisplaybrightness.log", level=logging.INFO)
 
-maxbrightness = 75
-minbrightness = 15
-now = datetime.now(tz.tz.tzlocal())
+maxbrightness = 80
+minbrightness = 10
+#now = datetime.now(tz.tz.tzlocal())
+now = datetime.now()
 
 bypass = False
 
@@ -111,7 +112,8 @@ def brightness_from_LDR():
 def brightness_from_suntime():
     try:
         from suntime import Sun
-    except:
+    except ModuleNotFoundError:
+        print('No suntime module')
         return None
     sun = Sun(50.7753, 6.0839)
     rise = sun.get_local_sunrise_time()
@@ -124,12 +126,13 @@ def brightness_from_suntime():
     return brightness
 
 def brightness_the_dumb_way():
-    # Simply a sine function.
+    # Simply a sine function.  Annoying on cloudy days.
     nowDec = now.hour + now.minute/60
     maxtime = 12
     brightness = int(round(minbrightness + (maxbrightness - minbrightness) * (1 + cos((nowDec - maxtime)*2*pi/24))/2))
 
 def set_brightness_continuously():
+    # Uses LDR readings
     lastbrightness = get_brightness()
     while True:
         brightness = brightness_from_LDR()
@@ -167,7 +170,10 @@ if __name__ == '__main__':
             way = 'sin'
 
     if bypass:
-        print('Bypass on')
+        log(-1, 'Bypass')
     else:
-        set_brightness(brightness)
-        log(brightness, way)
+        try:
+            set_brightness(brightness)
+            log(brightness, way)
+        except e:
+            log(-1, e.__name__)
