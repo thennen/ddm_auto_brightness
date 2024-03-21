@@ -3,7 +3,7 @@
 
 import os
 from math import sin, cos, pi
-from datetime import datetime
+import datetime
 from dateutil import tz
 import time
 
@@ -13,8 +13,9 @@ logging.basicConfig(filename="autodisplaybrightness.log", level=logging.INFO)
 
 maxbrightness = 80
 minbrightness = 10
-#now = datetime.now(tz.tz.tzlocal())
-now = datetime.now()
+tzlocal = tz.tz.tzlocal()
+now = datetime.datetime.now(tzlocal)
+#now = datetime.datetime.now()
 
 bypass = False
 
@@ -116,8 +117,16 @@ def brightness_from_suntime():
         print('No suntime module')
         return None
     sun = Sun(50.7753, 6.0839)
-    rise = sun.get_local_sunrise_time()
-    set = sun.get_local_sunset_time()
+    # Someone updated the suntime library in 2024 and broke it in several different ways
+    # Version 1.2.5 (2019) was fine.
+    try:
+        rise = sun.get_local_sunrise_time(time_zone=tzlocal)
+        set = sun.get_local_sunset_time(time_zone=tzlocal)
+    except TypeError:
+        rise = sun.get_local_sunrise_time()
+        set = sun.get_local_sunset_time()
+    if rise.day != set.day:
+        set += datetime.timedelta(days=1)
     dayfrac = (now - rise) / (set - rise)
     dayfrac = max(dayfrac, 0)
     dayfrac = min(dayfrac, 1)
